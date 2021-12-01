@@ -3,35 +3,68 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, Result},
 };
+#[cfg(feature = "default_async")]
+use {
+    async_std::{
+        fs::File as OtherFile,
+        io::{BufRead as OtherBufRead, BufReader as OtherBufReader, Result as OtherResult},
+    },
+    futures::io::AsyncBufReadExt,
+};
 
-const MARK: &[u8] = "sUfFiX".as_bytes();
-const MARK_SIZE: usize = MARK.len();
+const MARKS: &[u8] = "sUfFiX".as_bytes();
+const MARKS_SIZE: usize = MARKS.len();
 
 pub fn mark_bytes(bytes: &mut Vec<u8>) {
-    bytes.extend(MARK);
+    bytes.extend(MARKS);
 }
 
 pub fn erase_mark(bytes: &mut Vec<u8>) {
-    bytes.truncate(bytes.len() - MARK_SIZE);
+    bytes.truncate(bytes.len() - MARKS_SIZE);
 }
 
 fn buffered_bytes(f: &str) -> Result<Vec<u8>> {
     let f = File::open(f)?;
     let mut reader = BufReader::new(f);
+    type_of(&reader);
     let buffered = reader.fill_buf()?;
     let buffered = buffered.to_vec();
     reader.consume(buffered.len());
     Ok(buffered)
 }
+#[cfg(feature = "default_async")]
+async fn default_async_buffered_bytes(f: &str) -> OtherResult<Vec<u8>> {
+    let f = OtherFile::open(f).await?;
+    let mut reader = OtherBufReader::new(f);
+    type_of(&reader);
+    let buffered = reader.fill_buf().await?;
+    let buffered = buffered.to_vec();
+    //reader.consume(buffered.len());
+    Ok(buffered)
+}
 
+fn type_of<T>(_: &T) {
+    println!("The type is {:?}", std::any::type_name::<T>());
+}
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn marks_unmark_test_1() -> Result<()> {
         let f = "msg_empty.txt";
         let buf = buffered_bytes(f)?;
+        let unmarked = Marks::unmark(&buf);
+        if let Some(unmarked) = unmarked {
+            for i in 0..unmarked.0.len() {
+                println!("The msg = {:?}", String::from_utf8(unmarked.0[i].to_vec()));
+            }
+        }
+        Ok(())
+    }
+    #[async_std::test]
+    async fn other_marks_unmark_test_1() -> OtherResult<()> {
+        let f = "msg_empty.txt";
+        let buf = default_async_buffered_bytes(f).await?;
         let unmarked = Marks::unmark(&buf);
         if let Some(unmarked) = unmarked {
             for i in 0..unmarked.0.len() {
@@ -124,7 +157,7 @@ impl Marks {
         for i in 0..bytes.len() {
             if bytes[i] == start_byte && Start.matches(i, bytes) {
                 unmarked.push(&bytes[consumed_segments..i]);
-                consumed_segments = i + MARK_SIZE;
+                consumed_segments = i + MARKS_SIZE;
             }
         }
         Some((unmarked, consumed_segments))
@@ -136,4 +169,3 @@ impl From<Byte> for Marks {
         Marking(byte)
     }
 }
-
