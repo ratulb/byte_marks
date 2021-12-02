@@ -39,7 +39,7 @@ async fn default_async_buffered_bytes(f: &str) -> OtherResult<Vec<u8>> {
     type_of(&reader);
     let buffered = reader.fill_buf().await?;
     let buffered = buffered.to_vec();
-    //reader.consume(buffered.len());
+    reader.consume_unpin(buffered.len());
     Ok(buffered)
 }
 
