@@ -13,6 +13,7 @@ use {
 };
 
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 use std::env;
 
 lazy_static! {
@@ -22,7 +23,13 @@ lazy_static! {
             .into_boxed_str()
     )
     .as_bytes();
-    pub static ref MARKS_SIZE: usize = MARKS.len();
+    pub static ref INDICES: HashMap<&'static u8, usize> = {
+        let mut mark_indices = HashMap::new();
+        for i in 0..MARKS.len() {
+            mark_indices.insert(&MARKS[i], i);
+        }
+        mark_indices
+    };
 }
 
 pub fn mark_bytes(bytes: &mut Vec<u8>) {
@@ -30,7 +37,7 @@ pub fn mark_bytes(bytes: &mut Vec<u8>) {
 }
 
 pub fn erase_mark(bytes: &mut Vec<u8>) {
-    bytes.truncate(bytes.len() - *MARKS_SIZE);
+    bytes.truncate(bytes.len() - MARKS.len());
 }
 
 fn buffered_bytes(f: &str) -> Result<Vec<u8>> {
@@ -115,15 +122,16 @@ use crate::Marks::*;
 impl Marks {
     pub fn next(&self) -> Option<Self> {
         match self {
-            Start => Some(Marking(b's')),
-            Marking(byte) if *byte == b's' => Some(Marking(b'U')),
-            Marking(byte) if *byte == b'U' => Some(Marking(b'f')),
-            Marking(byte) if *byte == b'f' => Some(Marking(b'F')),
-            Marking(byte) if *byte == b'F' => Some(Marking(b'i')),
-            Marking(byte) if *byte == b'i' => Some(Marking(b'X')),
-            Marking(byte) if *byte == b'X' => Some(End),
+            Start => Some(Self::start_mark()),
+            Marking(byte) if *byte == Self::last_byte() => Some(End),
+            Marking(byte) => INDICES.get(byte).and_then(|index| {
+                if *index + 1 < MARKS.len() {
+                    Some(MARKS[*index + 1].into())
+                } else {
+                    None
+                }
+            }),
             End => None,
-            _ => panic!("Unsupported mark"),
         }
     }
     pub fn as_byte(&self) -> Byte {
@@ -137,6 +145,12 @@ impl Marks {
     pub fn start_mark() -> Marks {
         MARKS[0].into()
     }
+
+    #[inline(always)]
+    pub fn last_byte() -> Byte {
+        MARKS[MARKS.len() - 1]
+    }
+
     pub fn matches(&self, index: usize, bytes: &[u8]) -> bool {
         match self {
             Start => self.next().map_or(false, |next| {
@@ -163,7 +177,7 @@ impl Marks {
         let mut unmarked = Vec::new();
         let mut consumed_segments = 0;
         let start_byte = Self::start_mark().as_byte();
-        let marks_size: usize = *MARKS_SIZE;
+        let marks_size: usize = MARKS.len();
         for i in 0..bytes.len() {
             if bytes[i] == start_byte && Start.matches(i, bytes) {
                 unmarked.push(&bytes[consumed_segments..i]);
