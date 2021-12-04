@@ -15,7 +15,7 @@ use {
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::env;
-
+//Note the characters in the byte mark pattern should not repeat
 lazy_static! {
     pub static ref MARKS: &'static [u8] = Box::leak(
         env::var("byte_marks")
