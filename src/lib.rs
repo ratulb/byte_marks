@@ -12,21 +12,30 @@ use {
     futures::io::AsyncBufReadExt,
 };
 
-const MARKS: &[u8] = "sUfFiX".as_bytes();
-const MARKS_SIZE: usize = MARKS.len();
+use lazy_static::lazy_static;
+use std::env;
+
+lazy_static! {
+    pub static ref MARKS: &'static [u8] = Box::leak(
+        env::var("byte_marks")
+            .unwrap_or(include_str!("byte_marks").to_string())
+            .into_boxed_str()
+    )
+    .as_bytes();
+    pub static ref MARKS_SIZE: usize = MARKS.len();
+}
 
 pub fn mark_bytes(bytes: &mut Vec<u8>) {
-    bytes.extend(MARKS);
+    bytes.extend(*MARKS);
 }
 
 pub fn erase_mark(bytes: &mut Vec<u8>) {
-    bytes.truncate(bytes.len() - MARKS_SIZE);
+    bytes.truncate(bytes.len() - *MARKS_SIZE);
 }
 
 fn buffered_bytes(f: &str) -> Result<Vec<u8>> {
     let f = File::open(f)?;
     let mut reader = BufReader::new(f);
-    type_of(&reader);
     let buffered = reader.fill_buf()?;
     let buffered = buffered.to_vec();
     reader.consume(buffered.len());
@@ -43,9 +52,6 @@ async fn default_async_buffered_bytes(f: &str) -> OtherResult<Vec<u8>> {
     Ok(buffered)
 }
 
-fn type_of<T>(_: &T) {
-    println!("The type is {:?}", std::any::type_name::<T>());
-}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,6 +67,7 @@ mod tests {
         }
         Ok(())
     }
+    #[cfg(feature = "default_async")]
     #[async_std::test]
     async fn other_marks_unmark_test_1() -> OtherResult<()> {
         let f = "msg_empty.txt";
@@ -125,8 +132,10 @@ impl Marks {
             _ => panic!("Only Marking will have byte value!"),
         }
     }
+
+    #[inline(always)]
     pub fn start_mark() -> Marks {
-        Marking(b's')
+        MARKS[0].into()
     }
     pub fn matches(&self, index: usize, bytes: &[u8]) -> bool {
         match self {
@@ -154,10 +163,11 @@ impl Marks {
         let mut unmarked = Vec::new();
         let mut consumed_segments = 0;
         let start_byte = Self::start_mark().as_byte();
+        let marks_size: usize = *MARKS_SIZE;
         for i in 0..bytes.len() {
             if bytes[i] == start_byte && Start.matches(i, bytes) {
                 unmarked.push(&bytes[consumed_segments..i]);
-                consumed_segments = i + MARKS_SIZE;
+                consumed_segments = i + marks_size;
             }
         }
         Some((unmarked, consumed_segments))
