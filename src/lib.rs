@@ -1,8 +1,18 @@
+//! ## byte_marks
+//!
+//! `byte_marks` is a configurable, light weight and intuitive bytes' boundary marker for
+//! transmitting and receiving bytes from network/files. The demarcating byte pattern is
+//! configured via a file called `byte_marks` or a an environment variable named similarly.
+//! The characters in the byte mark pattern should not repeat. While trying to demarcate bytes
+//! its possible that - no progress is being made - its an indication that there may be no
+//! byte pattern in the stream being read or default buffer length has been hit without
+//! encountering any pattern delimiter.
+//!
+
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::env;
 
-//Note the characters in the byte mark pattern should not repeat
 lazy_static! {
     pub static ref MARKS: &'static [u8] = Box::leak(
         env::var("byte_marks")
@@ -19,17 +29,20 @@ lazy_static! {
     };
 }
 
+pub(crate) type Byte = u8;
+/// An enum to represent demarcating byte pattern. Start `next` is of interest to us. End
+/// signals a successful match of a byte delimiter pattern. On matching a delimiter pattern,
+/// all the bytes from end of the last delimiter match(if any) till the current delimiter
+/// (excluding the delimiter bytes) - would be considered as a matched entry.
+
 pub enum Marks {
     Start,
     Marking(Byte),
     End,
 }
 
-pub(crate) type Byte = u8;
 use crate::Marks::*;
-
 impl Marks {
-    #[inline(always)]
     pub fn next(&self) -> Option<Self> {
         match self {
             Start => Some(Self::start_mark()),
@@ -44,7 +57,7 @@ impl Marks {
             End => None,
         }
     }
-    #[inline(always)]
+
     pub fn as_byte(&self) -> Byte {
         match self {
             Marking(v) => *v,
@@ -52,17 +65,14 @@ impl Marks {
         }
     }
 
-    #[inline(always)]
     pub fn start_mark() -> Marks {
         MARKS[0].into()
     }
 
-    #[inline(always)]
     pub fn last_byte() -> Byte {
         MARKS[MARKS.len() - 1]
     }
 
-    #[inline(always)]
     pub fn matches(&self, index: usize, bytes: &[u8]) -> bool {
         match self {
             Start => self.next().map_or(false, |next| {
@@ -100,19 +110,16 @@ impl Marks {
         Some((unmarked, processed_segments))
     }
 
-    #[inline(always)]
     pub fn mark_bytes(bytes: &mut Vec<u8>) {
         bytes.extend(*MARKS);
     }
 
-    #[inline(always)]
     pub fn erase_mark(bytes: &mut Vec<u8>) {
         bytes.truncate(bytes.len() - MARKS.len());
     }
 }
 
 impl From<Byte> for Marks {
-    #[inline(always)]
     fn from(byte: Byte) -> Marks {
         Marking(byte)
     }
