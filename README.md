@@ -33,7 +33,7 @@ let random_texts = [
             //Get the bytes and demarcate with byte marks
             let mut bytes = picked_string.as_bytes().to_vec();
             Marks::mark_bytes(&mut bytes);//The bytes have been demarcated now
-            //Preserve the old string for for assertion below
+            //Preserve the old string for assertion below
             orig_strings.push(picked_string);
            //Keep extending the marked bytes
            marked_bytes.extend(bytes);
