@@ -38,8 +38,8 @@ let random_texts = [
            //Keep extending the marked bytes
            marked_bytes.extend(bytes);
         }
-        
-        //Get the orginal strings back from marked bytes
+        //Marked bytes may written to a file/sent across the wire
+        //Get the orginal strings back from marked bytes on receipt
         let unmarked = Marks::unmark(&marked_bytes).unwrap().0;
         //We must get same bytes back with demarcating bytes removed
         //Lets reconstruct the strings back and validate
