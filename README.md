@@ -32,13 +32,13 @@ let random_texts = [
             let picked_string = random_texts[index];
             //Get the bytes and demarcate with byte marks
             let mut bytes = picked_string.as_bytes().to_vec();
-            Marks::mark_bytes(&mut bytes);
-            //Preserve the old string for later validation
+            Marks::mark_bytes(&mut bytes);//The bytes have been demarcated now
+            //Preserve the old string for for assertion below
             orig_strings.push(picked_string);
            //Keep extending the marked bytes
            marked_bytes.extend(bytes);
         }
-        //Marked bytes may written to a file/sent across the wire
+        //Marked bytes may be written to a file/sent across the wire
         //Get the orginal strings back from marked bytes on receipt
         let unmarked = Marks::unmark(&marked_bytes).unwrap().0;
         //We must get same bytes back with demarcating bytes removed
