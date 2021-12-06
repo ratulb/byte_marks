@@ -33,7 +33,7 @@ pub(crate) type Byte = u8;
 /// An enum to represent demarcating byte pattern. Start `next` is of interest to us. End
 /// signals a successful match of a byte delimiter pattern. On matching a delimiter pattern,
 /// all the bytes from end of the last delimiter match(if any) till the current delimiter
-/// (excluding the delimiter bytes) - would be considered as a matched entry.
+/// (excluding the delimiter bytes) - would be considered as a matched bites.
 
 pub enum Marks {
     Start,
@@ -97,10 +97,10 @@ impl Marks {
         if bytes.is_empty() {
             return None;
         }
-        let mut unmarked = Vec::new();
+        let mut unmarked = Vec::with_capacity(bytes.len());
         let mut processed_segments = 0;
         let start_byte = Self::start_mark().as_byte();
-        let marks_size: usize = MARKS.len();
+        let marks_size = MARKS.len();
         for i in 0..bytes.len() {
             if bytes[i] == start_byte && Start.matches(i, bytes) {
                 unmarked.push(&bytes[processed_segments..i]);
