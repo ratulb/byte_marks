@@ -1,6 +1,5 @@
 # byte_marks
 A rust library to mark/unmark transmitted/received byte boundaries for messages.
-
 ### Example
 ```rust
 let random_texts = [
