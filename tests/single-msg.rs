@@ -44,7 +44,7 @@ mod tests {
         }
         Ok(())
     }
-    #[cfg(feature = "default_async")] 
+    #[cfg(feature = "default_async")]
     #[async_std::test]
     async fn unmark_one_msg_async_std_test_1() -> OtherResult<()> {
         let f = "tests/single-msg.txt";

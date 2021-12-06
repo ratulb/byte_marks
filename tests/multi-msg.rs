@@ -27,7 +27,7 @@ mod tests {
             if buf.len() == 0 {
                 break;
             }
-             //Following is the content inside the file with 'sUfFiX' as content at the end
+            //Following is the content inside the file with 'sUfFiX' as content at the end
             //'Just a testsUfFiX'
             let unmarked = Marks::unmark(&buf);
 
@@ -43,7 +43,7 @@ mod tests {
         }
         Ok(())
     }
-    #[cfg(feature = "default_async")] 
+    #[cfg(feature = "default_async")]
     #[async_std::test]
     async fn unmark_multi_msg_async_std_test_1() -> OtherResult<()> {
         let f = "tests/multi-msg.txt";
@@ -59,7 +59,7 @@ mod tests {
             //Following is the content inside the file with 'sUfFiX' as content at the end
             //'Just a testsUfFiX'
             let unmarked = Marks::unmark(&buf);
-            
+
             if let Some(unmarked) = unmarked {
                 for i in 0..unmarked.0.len() {
                     assert_eq!(
