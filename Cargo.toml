@@ -13,7 +13,7 @@ default_async = ["async-std", "futures"]
 default = ["std"]
 [dependencies]
 async-std = {version="^1.10.0", features=["attributes"], optional = true}
-futures = {version="^0.3.18", optional = true}
+futures = {version="0.3.18", optional = true}
 lazy_static = "1.4.0"
 
 [dev-dependencies]
