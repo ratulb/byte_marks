@@ -14,11 +14,11 @@ use std::collections::HashMap;
 use std::env;
 
 lazy_static! {
-    pub static ref MARKS: &'static [u8] = Box::leak(
-        env::var("byte_marks")
-            .unwrap_or(include_str!("byte_marks").to_string())
-            .into_boxed_str()
-    )
+    pub static ref MARKS: &'static [u8] = Box::leak({
+        let mut markings = env::var("byte_marks").unwrap_or(include_str!("byte_marks").to_string());
+        trim_newline(&mut markings);
+        markings.into_boxed_str()
+    })
     .as_bytes();
     pub static ref INDICES: HashMap<&'static u8, usize> = {
         let mut indices = HashMap::new();
@@ -27,6 +27,15 @@ lazy_static! {
         }
         indices
     };
+}
+
+pub fn trim_newline(s: &mut String) {
+    if s.ends_with('\n') {
+        s.pop();
+        if s.ends_with('\r') {
+            s.pop();
+        }
+    }
 }
 
 pub(crate) type Byte = u8;
@@ -93,21 +102,27 @@ impl Marks {
         }
     }
 
-    pub fn unmark(bytes: &[u8]) -> Option<(Vec<&[u8]>, usize)> {
+    pub fn unmark(bytes: &[u8]) -> Option<(Vec<&[u8]>, Option<&[u8]>)> {
         if bytes.is_empty() {
             return None;
         }
+
         let mut unmarked = Vec::with_capacity(bytes.len());
-        let mut processed_segments = 0;
+        let mut processed_bytes = 0;
         let start_byte = Self::start_mark().as_byte();
         let marks_size = MARKS.len();
+
         for i in 0..bytes.len() {
             if bytes[i] == start_byte && Start.matches(i, bytes) {
-                unmarked.push(&bytes[processed_segments..i]);
-                processed_segments = i + marks_size;
+                unmarked.push(&bytes[processed_bytes..i]);
+                processed_bytes = i + marks_size;
             }
         }
-        Some((unmarked, processed_segments))
+        let left_over = match &bytes[processed_bytes..] {
+            [remained @ ..] if remained.len() > 0 => Some(remained),
+            _ => None,
+        };
+        Some((unmarked, left_over))
     }
 
     pub fn mark_bytes(bytes: &mut Vec<u8>) {
@@ -116,6 +131,9 @@ impl Marks {
 
     pub fn erase_mark(bytes: &mut Vec<u8>) {
         bytes.truncate(bytes.len() - MARKS.len());
+    }
+    pub fn concat_u8(first: &[u8], second: &[u8]) -> Vec<u8> {
+        [first, second].concat()
     }
 }
 
