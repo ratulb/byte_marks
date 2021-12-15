@@ -9,11 +9,11 @@ description = "A rust lib crate to mark/unmark transmitted/received byte boundar
 repository = "https://github.com/ratulb/byte_marks"
 [features]
 std = []
-default_async = ["async-std", "futures"]
+default_async = ["async-std"]
 default = ["std"]
 [dependencies]
 async-std = {version="^1.10.0", features=["attributes"], optional = true}
-futures = {version="^0.3.18", optional = true}
+futures = { version="0.3.17", optional= true}
 lazy_static = "1.4.0"
 rand = "0.8.4"
 [dev-dependencies]
