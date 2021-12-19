@@ -15,5 +15,6 @@ default = ["std"]
 async-std = {version="^1.10.0", features=["attributes"], optional = true}
 futures = { version="0.3.17", optional= true}
 lazy_static = "1.4.0"
-rand = "0.8.4"
+
 [dev-dependencies]
+rand = "0.8.4"
