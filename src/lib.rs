@@ -1,3 +1,5 @@
+#![deny(elided_lifetimes_in_paths)]
+#![deny(rust_2018_idioms)]
 //! ## byte_marks
 //!
 //! `byte_marks` is a configurable, light weight and intuitive bytes' boundary marker for
@@ -12,6 +14,7 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::env;
+use std::io::BufRead;
 
 lazy_static! {
     pub static ref MARKS: &'static [u8] = Box::leak({
@@ -140,5 +143,89 @@ impl Marks {
 impl From<Byte> for Marks {
     fn from(byte: Byte) -> Marks {
         Marking(byte)
+    }
+}
+
+pub struct Unmarkable<'a, R>
+where
+    R: BufRead,
+{
+    reader: &'a mut R,
+    first: bool,
+    consumed: usize,
+    curr_buf: Option<Vec<Byte>>,
+    left_over: Option<Vec<Byte>>,
+    curr_pos: usize,
+}
+
+impl<'a, R> Unmarkable<'a, R>
+where
+    R: BufRead,
+{
+    pub fn new(r: &'a mut R) -> Self {
+        Self {
+            reader: r,
+            first: true,
+            consumed: 0,
+            curr_buf: None,
+            left_over: None,
+            curr_pos: 0,
+        }
+    }
+}
+
+impl<'a, R> Iterator for Unmarkable<'a, R>
+where
+    R: BufRead,
+{
+    type Item = Vec<Byte>;
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.first == false {
+                if self.consumed == 0 {
+                    return None;
+                } else {
+                    self.reader.consume(self.consumed);
+                }
+            } else {
+                self.first = false;
+            }
+            match self.curr_buf {
+                Some(ref bytes) => {
+                    let mut index = self.curr_pos;
+                    while index < bytes.len() {
+                        if bytes[index] == Marks::start_mark().as_byte()
+                            && Marks::Start.matches(index, &bytes)
+                        {
+                            let next = Some(bytes[self.curr_pos..index].to_vec());
+                            self.curr_pos = index + MARKS.len();
+                            return next;
+                        }
+                        index += 1;
+                    }
+                    if index >= bytes.len() {
+                        self.left_over = Some(bytes[self.curr_pos..].to_vec());
+                        self.curr_buf = None;
+                    }
+                }
+                None => match self.reader.fill_buf() {
+                    Ok(bread) if bread.len() == 0 => return self.left_over.take(),
+                    Ok(bread) => {
+                        self.consumed += bread.len();
+                        self.curr_pos = 0;
+                        if let Some(mut left_over) = self.left_over.take() {
+                            left_over.extend(bread);
+                            self.curr_buf = Some(left_over);
+                        } else {
+                            self.curr_buf = Some(bread.to_vec());
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("Error filling buf = {:?}", err);
+                        return None;
+                    }
+                },
+            }
+        }
     }
 }

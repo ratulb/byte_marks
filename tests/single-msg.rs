@@ -20,8 +20,9 @@ mod tests {
         let f = "tests/single-msg.txt";
         let f = File::open(f)?;
         let mut reader = BufReader::new(f);
-        let mut consumed = 0;
+        let consumed = 0;
         loop {
+            println!("Looping");
             reader.consume(consumed);
             let buf = reader.fill_buf()?;
             if buf.len() == 0 {
@@ -38,8 +39,9 @@ mod tests {
                         "This is one message till the delimiter at the end",
                         String::from_utf8(unmarked.0[i].to_vec()).unwrap()
                     );
+                    //consumed += unmarked.0[i].len() + byte_marks::MARKS.len();
                 }
-                consumed += unmarked.1;
+                //consumed += unmarked.1;
             }
         }
         Ok(())

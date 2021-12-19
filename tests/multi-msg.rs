@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use byte_marks::Marks;
+    use byte_marks::Unmarkable;
     #[cfg(feature = "std")]
     use std::{
         fs::File,
@@ -94,6 +95,21 @@ mod tests {
                 consumed += unmarked.1;
             }
         }
+        Ok(())
+    }
+    #[test]
+    fn unmarkable_iterator_test_1() -> Result<()> {
+        let f = "tests/multi-msg.txt";
+        let f = File::open(f)?;
+        //let mut reader = BufReader::with_capacity(32, f);
+        let mut reader = BufReader::new(f);
+        let unmarkable = Unmarkable::new(&mut reader);
+        let mut count = 0;
+        for unmarked in unmarkable {
+            println!("unmarked = {:?}", String::from_utf8(unmarked));
+            count += 1;
+        }
+        println!("Final count = {:?}", count);
         Ok(())
     }
 }
