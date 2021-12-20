@@ -152,11 +152,12 @@ where
 {
     reader: &'a mut R,
     first: bool,
-    consumed: usize,
+    curr_fetch: usize,
     curr_buf: Option<Vec<Byte>>,
     left_over: Option<Vec<Byte>>,
     curr_pos: usize,
-    diff: usize,
+    last_water_mark: usize,
+    curr_buf_exhausted: bool,
 }
 
 impl<'a, R> Unmarkable<'a, R>
@@ -167,11 +168,12 @@ where
         Self {
             reader: r,
             first: true,
-            consumed: 0,
+            curr_fetch: 0,
             curr_buf: None,
             left_over: None,
             curr_pos: 0,
-            diff: 0,
+            last_water_mark: 0,
+            curr_buf_exhausted: false,
         }
     }
 }
@@ -184,14 +186,14 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             if self.first == false {
-                if self.consumed == 0 {
+                if self.curr_fetch == 0 {
                     return None;
                 } else {
-                    if self.diff == self.consumed {
+                    if self.last_water_mark == self.curr_fetch && self.curr_buf_exhausted {
                         return self.left_over.take();
                     }
-                    self.reader.consume(self.consumed);
-                    self.diff = self.consumed;
+                    self.reader.consume(self.curr_fetch);
+                    self.last_water_mark = self.curr_fetch;
                 }
             } else {
                 self.first = false;
@@ -200,30 +202,36 @@ where
                 Some(ref bytes) => {
                     let mut index = self.curr_pos;
                     while index < bytes.len() {
+                        self.curr_buf_exhausted = false;
                         if bytes[index] == Marks::start_mark().as_byte()
                             && Marks::Start.matches(index, &bytes)
                         {
                             let next = Some(bytes[self.curr_pos..index].to_vec());
                             self.curr_pos = index + MARKS.len();
+                            println!("self.curr_pos  = {:?}", self.curr_pos);
+                            if self.curr_pos == bytes.len() {
+                                self.curr_buf_exhausted = true;
+                            }
                             return next;
                         }
                         index += 1;
                     }
-                    if index >= bytes.len() {
+                    if index == bytes.len() {
                         self.left_over = Some(bytes[self.curr_pos..].to_vec());
                         self.curr_buf = None;
+                        self.curr_buf_exhausted = true;
                     }
                 }
                 None => match self.reader.fill_buf() {
-                    Ok(bread) if bread.len() == 0 => return self.left_over.take(),
-                    Ok(bread) => {
-                        self.consumed += bread.len();
+                    Ok(buf) if buf.len() == 0 => return self.left_over.take(),
+                    Ok(buf) => {
+                        self.curr_fetch += buf.len();
                         self.curr_pos = 0;
                         if let Some(mut left_over) = self.left_over.take() {
-                            left_over.extend(bread);
+                            left_over.extend(buf);
                             self.curr_buf = Some(left_over);
                         } else {
-                            self.curr_buf = Some(bread.to_vec());
+                            self.curr_buf = Some(buf.to_vec());
                         }
                     }
                     Err(err) => {
