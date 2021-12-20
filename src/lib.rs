@@ -156,6 +156,7 @@ where
     curr_buf: Option<Vec<Byte>>,
     left_over: Option<Vec<Byte>>,
     curr_pos: usize,
+    diff: usize,
 }
 
 impl<'a, R> Unmarkable<'a, R>
@@ -170,6 +171,7 @@ where
             curr_buf: None,
             left_over: None,
             curr_pos: 0,
+            diff: 0,
         }
     }
 }
@@ -185,7 +187,11 @@ where
                 if self.consumed == 0 {
                     return None;
                 } else {
+                    if self.diff == self.consumed {
+                        return self.left_over.take();
+                    }
                     self.reader.consume(self.consumed);
+                    self.diff = self.consumed;
                 }
             } else {
                 self.first = false;
