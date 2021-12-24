@@ -1,9 +1,25 @@
 # byte_marks
 A rust library to mark/unmark transmitted/received byte boundaries for messages.
-### [Example](https://github.com/ratulb/byte_marks/blob/main/tests/random-msg.rs)
+### [Example](https://github.com/ratulb/byte_marks/blob/main/tests/example.rs)
 
 ```rust
-let random_texts = [
+        let message = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
+        let mut segments = Vec::new();
+        segments.push("Streaming".as_bytes());
+        segments.push(" with".as_bytes());
+        segments.push(" marks".as_bytes());
+        segments.push(" and tail".as_bytes());
+
+        let mut cursor = Cursor::new(message.as_bytes());
+        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
+        let zipped = marked.into_iter().zip(segments.iter());
+
+        for (unmarked, segment) in zipped {
+            assert!(unmarked == segment.to_vec());
+        }
+        
+
+     let random_texts = [
             "Some random",
             "strings from this array",
             "are getiing",
