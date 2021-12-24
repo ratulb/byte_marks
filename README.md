@@ -41,6 +41,9 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         let num_strings: usize = randomizer.gen_range(0..1000);
         let mut orig_strings = vec![];
         let mut marked_bytes = vec![];
+        
+        let marker = ByteMarker::new("sUfFiX", "");
+        
         for _ in 0..num_strings {
             //Pick a random index
             let index = randomizer.gen_range(0..random_texts.len());
@@ -48,7 +51,8 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
             let picked_string = random_texts[index];
             //Get the bytes and demarcate with byte marks
             let mut bytes = picked_string.as_bytes().to_vec();
-            Marks::mark_bytes(&mut bytes);//The bytes have been demarcated now
+            
+            marker.mark_bytes(&mut bytes);//The bytes have been demarcated now
             //Preserve the old string for assertion below
             orig_strings.push(picked_string);
            //Keep extending the marked bytes
@@ -56,7 +60,9 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         }
         //Marked bytes may be written to a file/sent across the wire
         //Get the orginal strings back from marked bytes on receipt
-        let unmarked = Marks::unmark(&marked_bytes).unwrap().0;
+        
+        let unmarked = marker.unmark(&marked_bytes).unwrap().0;
+        
         //We must get same bytes back with demarcating bytes removed
         //Lets reconstruct the strings back and validate
         for i in 0..unmarked.len() {
