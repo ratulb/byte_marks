@@ -234,7 +234,7 @@ impl<'a> ByteMarks<'a> {
                         })
             }
             MarkingEnd => true,
-            _ => false, //TODO ponder
+            _ => false, 
         }
     }
 
@@ -254,7 +254,7 @@ impl<'a> ByteMarks<'a> {
                 }
             }),
             TailEnd => None,
-            _ => None, //TODO ponder
+            _ => None, 
         }
     }
 
