@@ -17,8 +17,8 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         
         //From the stream create an iterator and validate the received message chunks
         
-        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
-        let zipped = marked.into_iter().zip(segments.iter());
+        let stream = Marked::new(&mut cursor, "sUfFiX", "tAiL");
+        let zipped = stream.into_iter().zip(segments.iter());
 
         for (unmarked, segment) in zipped {
             assert!(unmarked == segment.to_vec());
