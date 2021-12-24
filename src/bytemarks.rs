@@ -47,6 +47,12 @@ use crate::ByteMarks::*;
 
 impl<'a> ByteMarks<'a> {
     pub(crate) fn initialize(mark: &'a str, tail: &'a str) -> Self {
+        assert_ne!(mark, "", "Mark should not be empty!");
+        assert_ne!(
+            mark, tail,
+            "Mark {} and tail {} same! Should not be",
+            mark, tail
+        );
         let unique = Self::all_marking_unique(mark);
         let msg = unique.map(|(i, j, c)| {
             format!(

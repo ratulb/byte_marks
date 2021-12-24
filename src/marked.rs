@@ -1,6 +1,5 @@
 //! ## Marked
 //!
-//!
 
 use crate::Byte;
 use crate::ByteMarks;
@@ -50,12 +49,6 @@ where
         if tail.is_empty() {
             tail = &TAIL;
         }
-        assert_ne!(mark, "", "Mark should not be empty!");
-        assert_ne!(
-            mark, tail,
-            "Mark {} and tail {} same! Should not be",
-            mark, tail
-        );
         let initializer = ByteMarks::initialize(mark, tail);
         let marks = initializer.init_marking_indices();
         let tail = if initializer.tail_bytes_len() > 0 {
@@ -96,6 +89,9 @@ where
     type Item = Vec<Byte>;
     fn next(&mut self) -> Option<Self::Item> {
         loop {
+            if self.eof_reached {
+                return None;
+            }
             match self.curr_buf {
                 Some(ref bytes) => {
                     let mut index = self.buf_pos;
@@ -114,6 +110,23 @@ where
                                 self.curr_buf = None;
                             }
                             return next;
+                        }
+
+                        if let Some(ref tail) = self.tail {
+                            if bytes[index] == self.tail_start_byte
+                                && self.initializer.tail_marking_matches(
+                                    &self.initializer,
+                                    tail,
+                                    index,
+                                    bytes,
+                                )
+                            {
+                                let pre_tail = Some(bytes[self.buf_pos..index].to_vec());
+                                self.buf_pos = index + self.tail_size;
+                                self.eof_reached = true;
+                                self.curr_buf = None;
+                                return pre_tail;
+                            }
                         }
                         index += 1;
                     }

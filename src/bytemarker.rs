@@ -41,24 +41,27 @@ impl<'a> ByteMarker<'a> {
         let start_byte = self.initializer.marking_start_byte();
         let mark_size = self.initializer.marking_bytes_len();
 
-        for i in 0..bytes.len() {
-            if bytes[i] == start_byte
+        for index in 0..bytes.len() {
+            if bytes[index] == start_byte
                 && self
                     .initializer
-                    .marking_matches(&self.initializer, &self.marks, i, bytes)
+                    .marking_matches(&self.initializer, &self.marks, index, bytes)
             {
-                unmarked.push(&bytes[processed_bytes..i]);
-                processed_bytes = i + mark_size;
+                unmarked.push(&bytes[processed_bytes..index]);
+                processed_bytes = index + mark_size;
             }
             match self.tail {
                 None => continue,
                 Some(ref tail) => {
-                    if bytes[i] == self.initializer.tail_start_byte()
-                        && self
-                            .initializer
-                            .tail_marking_matches(&self.initializer, tail, i, bytes)
+                    if bytes[index] == self.initializer.tail_start_byte()
+                        && self.initializer.tail_marking_matches(
+                            &self.initializer,
+                            tail,
+                            index,
+                            bytes,
+                        )
                     {
-                        unmarked.push(&bytes[processed_bytes..i]);
+                        unmarked.push(&bytes[processed_bytes..index]);
                         return Some((unmarked, None));
                     }
                 }
