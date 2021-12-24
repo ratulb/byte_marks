@@ -6,6 +6,24 @@ mod tests {
     use std::io::Cursor;
 
     #[test]
+    fn test_streaming_with_marks_and_tail() {
+        let message = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
+        let mut segments = Vec::new();
+        segments.push("Streaming".as_bytes());
+        segments.push(" with".as_bytes());
+        segments.push(" marks".as_bytes());
+        segments.push(" and tail".as_bytes());
+
+        let mut cursor = Cursor::new(message.as_bytes());
+        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
+        let zipped = marked.into_iter().zip(segments.iter());
+
+        for (unmarked, segment) in zipped {
+            assert!(unmarked == segment.to_vec());
+        }
+    }
+
+    #[test]
     fn unmark_random_msg_test_1() {
         let random_texts = [
             "Some random",
@@ -61,24 +79,6 @@ mod tests {
                 orig_strings[i],
                 String::from_utf8(unmarked[i].to_vec()).unwrap()
             );
-        }
-    }
-
-    #[test]
-    fn test_streaming_with_marks_and_tail() {
-        let message = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
-        let mut segments = Vec::new();
-        segments.push("Streaming".as_bytes());
-        segments.push(" with".as_bytes());
-        segments.push(" marks".as_bytes());
-        segments.push(" and tail".as_bytes());
-
-        let mut cursor = Cursor::new(message.as_bytes());
-        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
-        let zipped = marked.into_iter().zip(segments.iter());
-
-        for (unmarked, segment) in zipped {
-            assert!(unmarked == segment.to_vec());
         }
     }
 }
