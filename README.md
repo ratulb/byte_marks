@@ -12,7 +12,7 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         segments.push(" marks".as_bytes());
         segments.push(" and tail".as_bytes());
         
-        //Cursor is akin to a Tcpstream
+        //Cursor is akin to a TcpStream
         let mut cursor = Cursor::new(message.as_bytes());
         
         //From the stream create an iterator and validate the received message chunks
