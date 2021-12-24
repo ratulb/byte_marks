@@ -1,23 +1,8 @@
 //! ## Marked
 //!
 
-use crate::Byte;
-use crate::ByteMarks;
-use lazy_static::lazy_static;
-use std::env;
+use crate::{Byte, ByteMarks, MARK, TAIL};
 use std::io::BufRead;
-
-lazy_static! {
-    pub static ref MARK: &'static str = Box::leak({
-        let markings =
-            env::var("byte_mark").unwrap_or_else(|_| include_str!("byte_mark").to_string());
-        markings.into_boxed_str()
-    });
-    pub static ref TAIL: &'static str = Box::leak({
-        let tail = env::var("byte_tail").unwrap_or_else(|_| include_str!("byte_tail").to_string());
-        tail.into_boxed_str()
-    });
-}
 
 pub struct Marked<'a, R>
 where
@@ -42,13 +27,10 @@ impl<'a, R> Marked<'a, R>
 where
     R: BufRead,
 {
-    pub fn new(r: &'a mut R, mut mark: &'a str, mut tail: &'a str) -> Self {
-        if mark.is_empty() {
-            mark = &MARK;
-        }
-        if tail.is_empty() {
-            tail = &TAIL;
-        }
+    pub fn with_defaults(r: &'a mut R) -> Self {
+        Self::new(r, &MARK, &TAIL)
+    }
+    pub fn new(r: &'a mut R, mark: &'a str, tail: &'a str) -> Self {
         let initializer = ByteMarks::initialize(mark, tail);
         let marks = initializer.init_marking_indices();
         let tail = if initializer.tail_bytes_len() > 0 {
@@ -206,7 +188,7 @@ mod test {
     #[test]
     fn test_empty_reader() {
         let mut cursor = Cursor::new(Vec::new());
-        let marked = Marked::new(&mut cursor, "", "");
+        let marked = Marked::with_defaults(&mut cursor);
         for bytes in marked {
             assert!(!bytes.is_empty());
         }
@@ -214,7 +196,7 @@ mod test {
     #[test]
     fn test_empty_file() -> Result<()> {
         let mut reader = BufReader::new(File::open("tests/empty.txt")?);
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         for bytes in marked {
             assert!(!bytes.is_empty());
         }
@@ -223,7 +205,7 @@ mod test {
     #[test]
     fn test_file_random_content() -> Result<()> {
         let mut reader = BufReader::new(File::open("tests/random.txt")?);
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         for bytes in marked {
             assert!(!bytes.is_empty());
         }
@@ -232,7 +214,7 @@ mod test {
     #[test]
     fn test_file_with_mark_at_end() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let mut reader = BufReader::new(File::open("tests/file_with_mark_at_end.txt")?);
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         let content = "tests/file_with_mark_at_end.txt";
         for bytes in marked {
             println!("Asserted before");
@@ -245,7 +227,7 @@ mod test {
     fn test_file_with_multiple_marks_at_end() -> std::result::Result<(), Box<dyn std::error::Error>>
     {
         let mut reader = BufReader::new(File::open("tests/file_with_multiple_marks_at_end.txt")?);
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         let content = "tests/file_with_multiple_marks_at_end.txt";
         for bytes in marked {
             println!("asserted");
@@ -257,7 +239,7 @@ mod test {
     fn test_file_with_multiple_marks_with_mark_being_passed() {
         let mut reader =
             BufReader::new(File::open("tests/file_with_multiple_marks_at_end.txt").unwrap());
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         let content = "tests/file_with_multiple_marks_at_end.txt";
         for bytes in marked {
             assert_eq!(content, &String::from_utf8(bytes).unwrap());
@@ -267,7 +249,7 @@ mod test {
     #[test]
     fn test_reader_with_reduced_capacity() -> Result<()> {
         let mut reader = BufReader::with_capacity(1, File::open("tests/random.txt")?);
-        let marked = Marked::new(&mut reader, "", "");
+        let marked = Marked::with_defaults(&mut reader);
         for bytes in marked {
             assert!(!bytes.is_empty());
         }
@@ -277,7 +259,7 @@ mod test {
     #[test]
     fn test_not_empty_reader() {
         let mut cursor = Cursor::new(vec![1, 2, 3]);
-        let marked = Marked::new(&mut cursor, "", "");
+        let marked = Marked::with_defaults(&mut cursor);
         for bytes in marked {
             assert!(!bytes.is_empty());
         }

@@ -10,6 +10,20 @@
 //! encountering any pattern delimiter.
 //!
 
+use lazy_static::lazy_static;
+use std::env;
+lazy_static! {
+    pub static ref MARK: &'static str = Box::leak({
+        let markings =
+            env::var("byte_mark").unwrap_or_else(|_| include_str!("byte_mark").to_string());
+        markings.into_boxed_str()
+    });
+    pub static ref TAIL: &'static str = Box::leak({
+        let tail = env::var("byte_tail").unwrap_or_else(|_| include_str!("byte_tail").to_string());
+        tail.into_boxed_str()
+    });
+}
+
 pub(crate) type Byte = u8;
 pub use bytemarker::ByteMarker;
 pub use bytemarks::ByteMarks;

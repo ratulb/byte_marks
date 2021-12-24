@@ -1,7 +1,6 @@
 //! ## ByteMarker
 //!
-use crate::Byte;
-use crate::ByteMarks;
+use crate::{Byte, ByteMarks, MARK, TAIL};
 
 pub struct ByteMarker<'a> {
     initializer: ByteMarks<'a>,
@@ -10,6 +9,11 @@ pub struct ByteMarker<'a> {
 }
 
 impl<'a> ByteMarker<'a> {
+   
+    pub fn with_defaults() -> Self {
+        Self::new(&MARK, &TAIL)
+    }
+
     pub fn new(mark: &'a str, tail: &'a str) -> Self {
         let initializer = ByteMarks::initialize(mark, tail);
         let marks = initializer.init_marking_indices();
