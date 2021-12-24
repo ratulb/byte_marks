@@ -1,0 +1,3 @@
+tests/file_with_multiple_marks_at_end.txtsUfFiX
+tests/file_with_multiple_marks_at_end.txtsUfFiX
+tests/file_with_multiple_marks_at_end.txtsUfFiX

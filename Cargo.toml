@@ -1,20 +1,9 @@
 [package]
 name = "byte_marks"
-version = "0.1.4"
+version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-license = "AGPL-3.0-or-later"
-description = "A rust lib crate to mark/unmark transmitted/received byte boundaries for messages."
-repository = "https://github.com/ratulb/byte_marks"
-[features]
-std = []
-default_async = ["async-std"]
-default = ["std"]
-[dependencies]
-async-std = {version="^1.10.0", features=["attributes"], optional = true}
-futures = { version="0.3.17", optional= true}
-lazy_static = "1.4.0"
 
-[dev-dependencies]
-rand = "0.8.4"
+[dependencies]
+lazy_static = "1.4.0"
