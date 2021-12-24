@@ -62,7 +62,7 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
             //Get the bytes and demarcate with byte marks
             let mut bytes = picked_string.as_bytes().to_vec();
             
-            marker.mark_bytes(&mut bytes);//The bytes have been attached with the marker               bytes of ```sUfFiX```
+            marker.mark_bytes(&mut bytes);//The bytes have been attached with the marker     bytes of ```sUfFiX```
            
            //Preserve the old string for assertion below
             orig_strings.push(picked_string);
