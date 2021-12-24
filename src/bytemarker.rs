@@ -11,12 +11,6 @@ pub struct ByteMarker<'a> {
 
 impl<'a> ByteMarker<'a> {
     pub fn new(mark: &'a str, tail: &'a str) -> Self {
-        assert_ne!(mark, "", "Mark should not be empty!");
-        assert_ne!(
-            mark, tail,
-            "Mark {} and tail {} same! Should not be",
-            mark, tail
-        );
         let initializer = ByteMarks::initialize(mark, tail);
         let marks = initializer.init_marking_indices();
         let tail = if initializer.tail_bytes_len() > 0 {
@@ -50,20 +44,14 @@ impl<'a> ByteMarker<'a> {
                 unmarked.push(&bytes[processed_bytes..index]);
                 processed_bytes = index + mark_size;
             }
-            match self.tail {
-                None => continue,
-                Some(ref tail) => {
-                    if bytes[index] == self.initializer.tail_start_byte()
-                        && self.initializer.tail_marking_matches(
-                            &self.initializer,
-                            tail,
-                            index,
-                            bytes,
-                        )
-                    {
-                        unmarked.push(&bytes[processed_bytes..index]);
-                        return Some((unmarked, None));
-                    }
+            if let Some(ref tail) = self.tail {
+                if bytes[index] == self.initializer.tail_start_byte()
+                    && self
+                        .initializer
+                        .tail_marking_matches(&self.initializer, tail, index, bytes)
+                {
+                    unmarked.push(&bytes[processed_bytes..index]);
+                    return Some((unmarked, None));
                 }
             }
         }
