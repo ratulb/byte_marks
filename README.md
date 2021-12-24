@@ -25,7 +25,7 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         }
         
      
-     ####This one shows how to extract marked byte chunks out from a stream of bytes
+     Shows how to unmark byte chunks out from a stream of marked bytes
      
      let random_texts = [
             "Some random",
