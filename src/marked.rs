@@ -217,9 +217,7 @@ mod test {
         let marked = Marked::with_defaults(&mut reader);
         let content = "tests/file_with_mark_at_end.txt";
         for bytes in marked {
-            println!("Asserted before");
             assert_eq!(content, &String::from_utf8(bytes)?);
-            println!("Asserted after");
         }
         Ok(())
     }
@@ -236,7 +234,7 @@ mod test {
         Ok(())
     }
     #[test]
-    fn test_file_with_multiple_marks_with_mark_being_passed() {
+    fn test_file_with_multiple_marks_with_defaults() {
         let mut reader =
             BufReader::new(File::open("tests/file_with_multiple_marks_at_end.txt").unwrap());
         let marked = Marked::with_defaults(&mut reader);
