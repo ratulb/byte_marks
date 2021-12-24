@@ -282,4 +282,22 @@ mod test {
             assert!(!bytes.is_empty());
         }
     }
+    #[test]
+    fn test_stream_with_marks_and_tail() {
+        let message =
+            "This issUfFiX a msgsUfFiX with interspercedsUfFiX with suffixes and finally atAiL";
+        let mut segments = Vec::new();
+        segments.push("This is".as_bytes());
+        segments.push(" a msg".as_bytes());
+        segments.push(" with intersperced".as_bytes());
+        segments.push(" with suffixes and finally a".as_bytes());
+
+        let mut cursor = Cursor::new(message.as_bytes());
+        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
+        let zipped = marked.into_iter().zip(segments.iter());
+
+        for (unmarked, segment) in zipped {
+            assert!(unmarked == segment.to_vec());
+        }
+    }
 }

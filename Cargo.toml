@@ -11,3 +11,4 @@ repository = "https://github.com/ratulb/byte_marks"
 
 [dependencies]
 lazy_static = "1.4.0"
+rand = "0.8.4"
