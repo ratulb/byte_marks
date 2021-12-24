@@ -15,8 +15,8 @@ mod tests {
         segments.push(" and tail".as_bytes());
 
         let mut cursor = Cursor::new(message.as_bytes());
-        let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
-        let zipped = marked.into_iter().zip(segments.iter());
+        let stream = Marked::new(&mut cursor, "sUfFiX", "tAiL");
+        let zipped = stream.into_iter().zip(segments.iter());
 
         for (unmarked, segment) in zipped {
             assert!(unmarked == segment.to_vec());
