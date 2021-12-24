@@ -3,14 +3,20 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
 ### [Example](https://github.com/ratulb/byte_marks/blob/main/tests/example.rs)
 
 ```rust
+        //The segmented message over the wire chunk|suffix| chunk | suffix| tail
         let message = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
+        //The following is for only showing validation
         let mut segments = Vec::new();
         segments.push("Streaming".as_bytes());
         segments.push(" with".as_bytes());
         segments.push(" marks".as_bytes());
         segments.push(" and tail".as_bytes());
-
+        
+        //Cursor is akin to a Tcpstream
         let mut cursor = Cursor::new(message.as_bytes());
+        
+        //From the stream create an iterator and validate the received message chunks
+        
         let marked = Marked::new(&mut cursor, "sUfFiX", "tAiL");
         let zipped = marked.into_iter().zip(segments.iter());
 
@@ -18,7 +24,9 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
             assert!(unmarked == segment.to_vec());
         }
         
-
+     
+     ####This one shows how to extract marked byte chunks out from a stream of bytes
+     
      let random_texts = [
             "Some random",
             "strings from this array",
@@ -47,13 +55,16 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
         for _ in 0..num_strings {
             //Pick a random index
             let index = randomizer.gen_range(0..random_texts.len());
+            
             //Pick a random string for the given index
             let picked_string = random_texts[index];
+            
             //Get the bytes and demarcate with byte marks
             let mut bytes = picked_string.as_bytes().to_vec();
             
-            marker.mark_bytes(&mut bytes);//The bytes have been demarcated now
-            //Preserve the old string for assertion below
+            marker.mark_bytes(&mut bytes);//The bytes have been attached with the marker               bytes of ```sUfFiX```
+           
+           //Preserve the old string for assertion below
             orig_strings.push(picked_string);
            //Keep extending the marked bytes
            marked_bytes.extend(bytes);
