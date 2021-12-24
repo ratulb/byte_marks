@@ -179,7 +179,7 @@ mod test {
                 s.drain(0..1);
             }
             if s == String::from("") {
-                continue; //This is because last line would be only '\n' - that we are taking out above
+                continue; //This is because last line would be only '\n' - since we are taking out above
             }
             assert_eq!(content, &s);
         }
