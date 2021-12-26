@@ -9,7 +9,6 @@ pub struct ByteMarker<'a> {
 }
 
 impl<'a> ByteMarker<'a> {
-   
     pub fn with_defaults() -> Self {
         Self::new(&MARK, &TAIL)
     }

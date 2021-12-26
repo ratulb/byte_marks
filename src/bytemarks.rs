@@ -234,7 +234,7 @@ impl<'a> ByteMarks<'a> {
                         })
             }
             MarkingEnd => true,
-            _ => false, 
+            _ => false,
         }
     }
 
@@ -254,7 +254,7 @@ impl<'a> ByteMarks<'a> {
                 }
             }),
             TailEnd => None,
-            _ => None, 
+            _ => None,
         }
     }
 

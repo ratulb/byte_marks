@@ -3,25 +3,25 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
 ### [Example](https://github.com/ratulb/byte_marks/blob/main/tests/example.rs)
 
 ```rust
-        //The segmented message over the wire chunk|suffix| chunk | suffix| tail
-        let message = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
+        //message_stream -> stream of messages -> msg|suffix|msg|suffix|msg|tail
+        let msg_stream  = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
         //The following is for only showing validation
-        let mut segments = Vec::new();
-        segments.push("Streaming".as_bytes());
-        segments.push(" with".as_bytes());
-        segments.push(" marks".as_bytes());
-        segments.push(" and tail".as_bytes());
+        let mut messages = Vec::new();
+        messages.push("Streaming".as_bytes());
+        messages.push(" with".as_bytes());
+        messages.push(" marks".as_bytes());
+        messages.push(" and tail".as_bytes());
         
         //Cursor is akin to a TcpStream
-        let mut cursor = Cursor::new(message.as_bytes());
+        let mut cursor = Cursor::new(message_stream.as_bytes());
         
         //From the stream create an iterator and validate the received message chunks
         
         let stream = Marked::new(&mut cursor, "sUfFiX", "tAiL");
-        let zipped = stream.into_iter().zip(segments.iter());
+        let zipped = stream.into_iter().zip(messages.iter());
 
-        for (unmarked, segment) in zipped {
-            assert!(unmarked == segment.to_vec());
+        for (unmarked, message) in zipped {
+            assert!(unmarked == message.to_vec());
         }
         
      
