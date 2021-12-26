@@ -4,7 +4,7 @@ A rust library to mark/unmark transmitted/received byte boundaries for messages.
 
 ```rust
         //message_stream -> stream of messages -> msg|suffix|msg|suffix|msg|tail
-        let msg_stream  = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
+        let message_stream  = "StreamingsUfFiX withsUfFiX markssUfFiX and tailtAiL";
         //The following is for only showing validation
         let mut messages = Vec::new();
         messages.push("Streaming".as_bytes());
