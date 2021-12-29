@@ -5,10 +5,7 @@
 use crate::Byte;
 use std::collections::HashMap;
 
-/// An enum to represent demarcating byte pattern. Start `next` is of interest to us. End
-/// signals a successful match of a byte delimiter pattern. On matching a delimiter pattern,
-/// all the bytes from end of the last delimiter match(if any) till the current delimiter
-/// (excluding the delimiter bytes) - would be considered as a matched bites.
+/// An enum to represent demarcating byte pattern.
 
 pub enum ByteMarks<'a> {
     Initializer(&'a [Byte], &'a [Byte]),

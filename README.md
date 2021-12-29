@@ -1,5 +1,5 @@
 # byte_marks
-A rust library to mark/unmark transmitted/received byte boundaries for messages.
+A configurable bytes' boundary marker for transmitting and receiving bytes from network/files. This comes very handy while building application network protocols - for example, one could read off the demarcated bytes of the wire and could use bincode (https://github.com/bincode-org/bincode) to reconstruct a struct from those bytes.
 ### [Example](https://github.com/ratulb/byte_marks/blob/main/tests/example.rs)
 
 ```rust
