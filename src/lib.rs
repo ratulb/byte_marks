@@ -1,3 +1,4 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(elided_lifetimes_in_paths)]
 #![deny(rust_2018_idioms)]
 //! ## byte_marks
