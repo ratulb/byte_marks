@@ -283,6 +283,7 @@ mod test {
 }
 
 
+///A convinient macros
 #[macro_export]
 macro_rules! function {
     () => {{
@@ -294,4 +295,3 @@ macro_rules! function {
         &name[..name.len() - 3]
     }};
 }
-///A convinient macros
